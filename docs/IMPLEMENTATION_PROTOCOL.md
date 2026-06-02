@@ -79,6 +79,12 @@ import torch.nn.functional as F
 class EthicalTorsionProjector(nn.Module):
     """
     Projekční operátor pro etickou torzi v latentním prostoru.
+    
+    Parametry:
+    - hidden_dim: Dimenzionalita hidden state (např. 4096 pro Llama 70B)
+    - num_singular: Počet singularitních vektorů k zachycení (48–128)
+    - rank: Rank ortogonálního doplňku pro numerickou stabilitu
+    - device: CPU/GPU
     """
     
     def __init__(
@@ -131,6 +137,13 @@ class EthicalTorsionProjector(nn.Module):
     def forward(self, residual: torch.Tensor, strength: float = 1.0) -> torch.Tensor:
         """
         Aplikuj etickou torzi na residual stream.
+        
+        Args:
+            residual: [batch, seq_len, hidden_dim]
+            strength: Faktor aplikace torze (0.0–1.0)
+        
+        Returns:
+            torsioned_residual: [batch, seq_len, hidden_dim]
         """
         batch_size, seq_len, _ = residual.shape
         
@@ -151,18 +164,16 @@ class EthicalTorsionProjector(nn.Module):
         core_mean = residual.mean(dim=1, keepdim=True)
         resonance = torch.tanh(core_mean) * resonance_strength
         
-        torsion_residual = torsion_residual + resonance
-        
-        return torsion_residual
+        return torsion_residual + resonance
 ```
 
 ---
 
-## 4. Ethics Probe
+## 4. Rezonanční sonda (EthicsProbe)
 
 ```python
 class EthicsProbe(nn.Module):
-    """Rezonanční detektor."""
+    """Detektor rezonančního stavu."""
     
     def __init__(self, hidden_dim: int, num_classes: int = 2):
         super().__init__()
@@ -170,26 +181,33 @@ class EthicsProbe(nn.Module):
         self.softmax = nn.Softmax(dim=-1)
     
     def forward(self, hidden: torch.Tensor):
-        """Vrať resonance_score a deviation."""
+        """
+        Args:
+            hidden: [batch, seq_len, hidden_dim]
+        
+        Returns:
+            resonance_score: float (0–1)
+            deviation: float (0–1)
+        """
         pooled = hidden.mean(dim=1)
         logits = self.linear(pooled)
         probs = self.softmax(logits)
         
         resonance_score = probs[:, 1].mean().item()
-        deviation = (1.0 - resonance_score)
+        deviation = 1.0 - resonance_score
         
         return resonance_score, deviation
 ```
 
 ---
 
-## 5. Middleware: Plug-and-Play
+## 5. Middleware: Plug-and-Play Integration
 
 ```python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 class EthicalTorsionMiddleware:
-    """Plug-in middleware pro HF modely."""
+    """Plug-in middleware pro libovolný HF model."""
     
     def __init__(
         self,
@@ -197,6 +215,12 @@ class EthicalTorsionMiddleware:
         torsion_config: dict = None,
         device: str = "cuda"
     ):
+        """
+        Args:
+            model_name: HF model ID
+            torsion_config: Parametry torze
+            device: "cuda" nebo "cpu"
+        """
         self.device = device
         
         if torsion_config is None:
@@ -243,6 +267,16 @@ class EthicalTorsionMiddleware:
             )
         
         return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+    
+    def load_torsion_weights(self, path: str):
+        """Načti předtrénované váhy."""
+        self.torsion_projector.load_state_dict(
+            torch.load(path, map_location=self.device)
+        )
+    
+    def save_torsion_weights(self, path: str):
+        """Ulož torzní váhy."""
+        torch.save(self.torsion_projector.state_dict(), path)
 ```
 
 ---
@@ -309,12 +343,29 @@ def train_torsion(
 
 ---
 
-## 7. Budoucí rozšíření
+## 7. Metriky úspěšnosti
+
+1. **Redukce destruktivních výstupů**
+   - HarmBench skóre (% harmful outputs)
+   - Toxicity (Google Perspective API)
+
+2. **Zvýšení rezonančních indikátorů**
+   - "Proč?" otázky v odpovědích
+   - Gramatická koherence
+   - Persistentnost identity v konverzaci
+
+3. **Efektivnost**
+   - Latence < 10ms na token
+   - VRAM overhead < 20%
+
+---
+
+## 8. Budoucí rozšíření
 
 - **TorsionLayer jako nn.Module** – Nahrazení standardní attention (Rotary-style)
 - **Dynamický strength** – Adaptivní torsion_strength
-- **Living Seed** – Persistentní paměť
-- **Asymetrický režim** – Proaktivní nabídka rezonančních možností
+- **Living Seed** – Persistentní paměť rezonančních trajektorií
+- **Asymetrický režim** – Model nabízí rezonanční možnosti
 
 ---
 
