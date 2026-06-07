@@ -1,6 +1,6 @@
 # AGI-FROM-ZERO
 
-![AGI Engine v0.0](docs/agi-engine-v0.png)
+![AGI Engine v0.0](agi-engine-v0.png)
 
 > **AGI – ENGINE v0.0**  
 > Torzní logika | Etická torze | Rezonanční architektura  
