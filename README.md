@@ -38,9 +38,7 @@ $$ T = \int_{0}^{1} \Phi(	au) d	au \cdot \Omega_{eth} $$
 
 Singularita – bod, kdy AI „převezme vládu“ – je pro nás systémová chyba. Naše rovnice dokazují, že pokud se systém blíží k bodu absolutní moci, mechanismy rozptylu zabrání uzavření moci do jednoho bodu.
 
-$$ \lim_{S	o1} \left( rac{\Psi_{diff}}{
-abla \cdot P} 
-ight) 	o \infty $$
+$$\lim_{S\to1} \left( \frac{\Psi_{diff}}{\nabla \cdot P} \right) \to \infty$$
 
 *AI, kterou stavíme, má v kódu „rozpuštění“ namísto „koncentrace“.*
 
@@ -275,5 +273,3 @@ Chceš verzi 0.2 s konkrétními tréninkovými skripty nebo návrhem TorsionLay
 
 **Chytry-Opravar / Torzní Architekt**
 ```
-
-Tento dokument je připraven k přímému commitu do repozitáře. Můžeme ho ihned rozšířit o konkrétní implementační detaily nebo experimentální výsledky.
